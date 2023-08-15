@@ -1,10 +1,26 @@
 #include "server.h"
 #include <QDebug>
+#include <QNetworkInterface>
 
 Server::Server(QObject *parent) : QObject(parent)
 {
     server = new QTcpServer(this);
     connect(server, &QTcpServer::newConnection, this, &Server::handleNewConnection);
+}
+
+QString getLocalIpAddress()
+{
+    QString localIpAddress;
+    foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
+        foreach (const QNetworkAddressEntry &entry, interface.addressEntries()) {
+            if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol && !entry.ip().isLoopback()) {
+                localIpAddress = entry.ip().toString();
+                return localIpAddress;
+            }
+        }
+    }
+
+    return localIpAddress;
 }
 
 void Server::start()
@@ -14,6 +30,7 @@ void Server::start()
         qDebug() << "Error: " << server->errorString();
     } else {
         qDebug() << "Server started.";
+        qDebug() << "Server IP Address: " << getLocalIpAddress();
     }
 }
 

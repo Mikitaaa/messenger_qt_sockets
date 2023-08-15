@@ -2,6 +2,7 @@
 #define SERVERWINDOW_H
 
 #include <QMainWindow>
+#include "server.h"
 
 class ServerWindow : public QMainWindow
 {
@@ -10,5 +11,8 @@ class ServerWindow : public QMainWindow
 public:
     ServerWindow(QWidget *parent = nullptr);
     ~ServerWindow();
+
+private:
+    Server *server;
 };
 #endif // SERVERWINDOW_H
