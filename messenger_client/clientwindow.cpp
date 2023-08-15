@@ -1,5 +1,4 @@
 #include "clientwindow.h"
-#include <QtWidgets>
 
 ClientWindow::ClientWindow(QWidget *parent)
     : QMainWindow(parent), client(new Client(this))
@@ -17,7 +16,7 @@ ClientWindow::ClientWindow(QWidget *parent)
     centralWidget->setLayout(layout);
     setCentralWidget(centralWidget);
 
-    client->setServerPort(8123);
+    client->setServerPort(5000);
     client->setServerAddress("192.168.0.110");
     client->connectToServer();
 }
