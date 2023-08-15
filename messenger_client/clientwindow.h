@@ -2,6 +2,10 @@
 #define CLIENTWINDOW_H
 
 #include <QMainWindow>
+#include "client.h"
+
+class QLineEdit;
+class QPushButton;
 
 class ClientWindow : public QMainWindow
 {
@@ -10,5 +14,13 @@ class ClientWindow : public QMainWindow
 public:
     ClientWindow(QWidget *parent = nullptr);
     ~ClientWindow();
+
+private slots:
+    void sendMessage();
+
+private:
+    Client *client;
+    QLineEdit *messageLineEdit;
+    QPushButton *sendButton;
 };
 #endif // CLIENTWINDOW_H

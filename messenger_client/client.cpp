@@ -14,12 +14,26 @@ Client::Client(QObject *parent)
 void Client::sendMessage(const QString &message) {
     if (serverSocket->state() == QAbstractSocket::ConnectedState) {
         QByteArray data = message.toUtf8();
-        serverSocket->write(data);
+        if (serverSocket->write(data) == -1) {
+            qDebug() << "Failed to send message.";
+        }
         serverSocket->flush();
+    } else {
+        qDebug() << "Not connected to server. Message not sent.";
     }
 }
 
-void Client::connectToServer() {  serverSocket->connectToHost(serverAddress, serverPort); }
+void Client::connectToServer() {
+    if (!serverAddress.isEmpty() && serverPort != 0) {
+        serverSocket->connectToHost(serverAddress, serverPort);
+
+        if (!serverSocket->waitForConnected()) {
+            qDebug() << "Failed to connect to server. Error code: " << serverSocket->error();
+        }
+    } else {
+        qDebug() << "Server address or port isn't set.";
+    }
+}
 
 void Client::disconnectFromServer() {  serverSocket->disconnectFromHost(); }
 
