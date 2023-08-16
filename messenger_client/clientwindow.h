@@ -22,5 +22,7 @@ private:
     Client *client;
     QLineEdit *messageLineEdit;
     QPushButton *sendButton;
+    QTextEdit *chatTextEdit;
+    QLabel *errorLabel;
 };
 #endif // CLIENTWINDOW_H
