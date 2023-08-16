@@ -3,8 +3,8 @@
 Client::Client(QObject *parent)
     : QObject(parent), serverSocket(new QTcpSocket(this)) {
 
-    serverPort = 5000;
-    serverAddress = "";
+    serverPort = 0;
+    serverAddress = "null";
 
     connect(serverSocket, &QTcpSocket::connected, this, &Client::connected);
     connect(serverSocket, &QTcpSocket::disconnected, this, &Client::disconnected);

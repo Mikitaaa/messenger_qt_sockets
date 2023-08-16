@@ -2,7 +2,7 @@
 
 ClientWindow::ClientWindow(QWidget *parent)
     : QMainWindow(parent), client(new Client(this)) {
-    resize(600, 600);
+    resize(400, 400);
 
     connect(client, &Client::ThrowActionResult, this, &ClientWindow::displayError);
     connect(client, &Client::ThrowMessageFromServer, this, &ClientWindow::displayMessage);
