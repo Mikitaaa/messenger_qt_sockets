@@ -10,6 +10,7 @@ class Server : public QObject
     Q_OBJECT
 public:
     explicit Server(QObject *parent = nullptr);
+    void sendMessageToAll(QString msg);
 
 public slots:
     void start();

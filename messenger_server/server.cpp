@@ -63,13 +63,13 @@ void Server::readMessage() {
             qDebug() << "Received empty message.";
         } else {
             qDebug() << "Received: " << message;
+            sendMessageToAll(message);
         }
+}
 
-    // send message to all clients
-    foreach (QTcpSocket *otherClient, clients) {
-       if (otherClient != clientSocket) {
-          otherClient->write(message.toUtf8());
+void Server::sendMessageToAll(QString msg) {
+    for (QTcpSocket *otherClient : clients) {
+          otherClient->write(msg.toUtf8());
           otherClient->flush();
-       }
     }
 }
