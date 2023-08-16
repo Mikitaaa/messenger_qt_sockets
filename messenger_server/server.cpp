@@ -2,14 +2,12 @@
 #include <QDebug>
 #include <QNetworkInterface>
 
-Server::Server(QObject *parent) : QObject(parent)
-{
+Server::Server(QObject *parent) : QObject(parent) {
     server = new QTcpServer(this);
     connect(server, &QTcpServer::newConnection, this, &Server::handleNewConnection);
 }
 
-QString getLocalIpAddress()
-{
+QString getLocalIpAddress() {
     QString localIpAddress;
     foreach (const QNetworkInterface &interface, QNetworkInterface::allInterfaces()) {
         foreach (const QNetworkAddressEntry &entry, interface.addressEntries()) {
@@ -23,8 +21,7 @@ QString getLocalIpAddress()
     return localIpAddress;
 }
 
-void Server::start()
-{
+void Server::start() {
     if (!server->listen(QHostAddress::Any, SERVER_PORT)) {
         qDebug() << "Server could not start!";
         qDebug() << "Error: " << server->errorString();
@@ -34,8 +31,7 @@ void Server::start()
     }
 }
 
-void Server::handleNewConnection()
-{
+void Server::handleNewConnection() {
     QTcpSocket *clientSocket = server->nextPendingConnection();
     if (!clientSocket) {
             qDebug() << "Error: Unable to get client connection.";
@@ -44,11 +40,20 @@ void Server::handleNewConnection()
 
     clients.append(clientSocket);
     connect(clientSocket, &QTcpSocket::readyRead, this, &Server::readMessage);
+    connect(clientSocket, &QTcpSocket::disconnected, this, &Server::handleClientDisconnection);
     qDebug() << "New client connected.";
 }
 
-void Server::readMessage()
-{
+void Server::handleClientDisconnection() {
+    QTcpSocket *clientSocket = qobject_cast<QTcpSocket*>(sender());
+    if (!clientSocket) { return; }
+
+    clients.removeOne(clientSocket);
+    qDebug() << "Client disconnected.";
+    clientSocket->deleteLater();
+}
+
+void Server::readMessage() {
     QTcpSocket *clientSocket = qobject_cast<QTcpSocket*>(sender());
     if (!clientSocket) { return; }
 
@@ -59,4 +64,12 @@ void Server::readMessage()
         } else {
             qDebug() << "Received: " << message;
         }
+
+    // send message to all clients
+    foreach (QTcpSocket *otherClient, clients) {
+       if (otherClient != clientSocket) {
+          otherClient->write(message.toUtf8());
+          otherClient->flush();
+       }
+    }
 }

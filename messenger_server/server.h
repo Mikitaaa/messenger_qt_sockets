@@ -16,6 +16,7 @@ public slots:
 
 private slots:
     void handleNewConnection();
+    void handleClientDisconnection();
     void readMessage();
 
 private:
