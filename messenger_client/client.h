@@ -26,6 +26,10 @@ private:
     QTcpSocket *serverSocket;
     QString serverAddress;
     quint16 serverPort;
+
+signals:
+    void ThrowActionResult(const QString &errorMessage);
+    void ThrowMessageFromServer(const QString &Message);
 };
 
 #endif // CLIENT_H

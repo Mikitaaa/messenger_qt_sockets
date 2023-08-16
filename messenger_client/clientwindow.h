@@ -17,6 +17,8 @@ public:
 
 private slots:
     void sendMessage();
+    void displayError(const QString &errorMessage);
+     void displayMessage(const QString &Message);
 
 private:
     Client *client;

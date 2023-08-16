@@ -2,6 +2,9 @@
 
 ClientWindow::ClientWindow(QWidget *parent)
     : QMainWindow(parent), client(new Client(this)) {
+    connect(client, &Client::ThrowActionResult, this, &ClientWindow::displayError);
+    connect(client, &Client::ThrowMessageFromServer, this, &ClientWindow::displayMessage);
+
     messageLineEdit = new QLineEdit(this);
     sendButton = new QPushButton("Send", this);
     chatTextEdit = new QTextEdit(this);
@@ -36,3 +39,12 @@ void ClientWindow::sendMessage() {
     client->sendMessage(message);
     messageLineEdit->clear();
 }
+
+void ClientWindow::displayError(const QString &errorMessage) {
+    errorLabel->setText(errorMessage);
+}
+
+void ClientWindow::displayMessage(const QString &Message) {
+    chatTextEdit->append(Message + "\n");
+}
+

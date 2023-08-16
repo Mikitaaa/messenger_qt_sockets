@@ -15,11 +15,11 @@ void Client::sendMessage(const QString &message) {
     if (serverSocket->state() == QAbstractSocket::ConnectedState) {
         QByteArray data = message.toUtf8();
         if (serverSocket->write(data) == -1) {
-            qDebug() << "Failed to send message.";
+            emit ThrowActionResult("Failed to send message.");
         }
         serverSocket->flush();
     } else {
-        qDebug() << "Not connected to server. Message not sent.";
+        emit ThrowActionResult("Not connected to server. Message not sent.");
     }
 }
 
@@ -28,22 +28,22 @@ void Client::connectToServer() {
         serverSocket->connectToHost(serverAddress, serverPort);
 
         if (!serverSocket->waitForConnected()) {
-            qDebug() << "Failed to connect to server. Error code: " << serverSocket->error();
+            emit ThrowActionResult("Connection Failed.");
         }
     } else {
-        qDebug() << "Server address or port isn't set.";
+        emit ThrowActionResult("Server address or port isn't set.");
     }
 }
 
 void Client::disconnectFromServer() {  serverSocket->disconnectFromHost(); }
 
-void Client::connected() { qDebug() << "Connected to server."; }
+void Client::connected() { emit ThrowActionResult("Connected to server."); }
 
-void Client::disconnected() { qDebug() << "Disconnected from server."; }
+void Client::disconnected() { emit ThrowActionResult("Disconnected from server."); }
 
 void Client::readyRead() {
     QByteArray data = serverSocket->readAll();
-    qDebug() << "Received data: " << data;
+    emit ThrowMessageFromServer(QString(data));
 }
 
 void Client::setServerAddress(const QString &address) { serverAddress = address; }
