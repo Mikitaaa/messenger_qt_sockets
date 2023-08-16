@@ -1,5 +1,4 @@
 #include "server.h"
-#include <QDebug>
 #include <QNetworkInterface>
 
 Server::Server(QObject *parent) : QObject(parent) {
@@ -23,30 +22,28 @@ QString getLocalIpAddress() {
 
 void Server::start() {
     if (!server->listen(QHostAddress::Any, SERVER_PORT)) {
-        qDebug() << "Server could not start!";
-        qDebug() << "Error: " << server->errorString();
+        emit ThrowlogMessage("Error: Server could not start!");
     } else {
-        qDebug() << "Server started.";
-        qDebug() << "Server IP Address: " << getLocalIpAddress();
+        emit ThrowlogMessage("Server started with IP: " + getLocalIpAddress());
     }
 }
 
 void Server::stop() {
     server->close();
-    qDebug() << "Server stopped.";
+    emit ThrowlogMessage("Server stopped.");
 }
 
 void Server::handleNewConnection() {
     QTcpSocket *clientSocket = server->nextPendingConnection();
     if (!clientSocket) {
-            qDebug() << "Error: Unable to get client connection.";
-            return;
-        }
+        emit ThrowlogMessage("Error: Unable to get client connection.");
+        return;
+    }
 
     clients.append(clientSocket);
     connect(clientSocket, &QTcpSocket::readyRead, this, &Server::readMessage);
     connect(clientSocket, &QTcpSocket::disconnected, this, &Server::handleClientDisconnection);
-    qDebug() << "New client connected.";
+    emit ThrowlogMessage("New client connected.");
 }
 
 void Server::handleClientDisconnection() {
@@ -54,7 +51,7 @@ void Server::handleClientDisconnection() {
     if (!clientSocket) { return; }
 
     clients.removeOne(clientSocket);
-    qDebug() << "Client disconnected.";
+    emit ThrowlogMessage("Client disconnected.");
     clientSocket->deleteLater();
 }
 
@@ -62,14 +59,8 @@ void Server::readMessage() {
     QTcpSocket *clientSocket = qobject_cast<QTcpSocket*>(sender());
     if (!clientSocket) { return; }
 
-
     QString message = clientSocket->readAll();
-        if (message.isEmpty()) {
-            qDebug() << "Received empty message.";
-        } else {
-            qDebug() << "Received: " << message;
-            sendMessageToAll(message);
-        }
+    sendMessageToAll(message);
 }
 
 void Server::sendMessageToAll(QString msg) {

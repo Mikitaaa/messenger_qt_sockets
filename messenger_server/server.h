@@ -26,6 +26,9 @@ private:
     QList<QTcpSocket*> clients;
 
     static const int SERVER_PORT = 5000;
+
+signals:
+    void ThrowlogMessage(const QString &message);
 };
 
 #endif // SERVER_H
