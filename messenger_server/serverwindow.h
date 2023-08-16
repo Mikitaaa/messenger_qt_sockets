@@ -2,6 +2,7 @@
 #define SERVERWINDOW_H
 
 #include <QMainWindow>
+#include <QPushButton>
 #include "server.h"
 
 class ServerWindow : public QMainWindow
@@ -14,5 +15,8 @@ public:
 
 private:
     Server *server;
+
+    QPushButton *startButton;
+    QPushButton *stopButton;
 };
 #endif // SERVERWINDOW_H

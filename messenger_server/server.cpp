@@ -31,6 +31,11 @@ void Server::start() {
     }
 }
 
+void Server::stop() {
+    server->close();
+    qDebug() << "Server stopped.";
+}
+
 void Server::handleNewConnection() {
     QTcpSocket *clientSocket = server->nextPendingConnection();
     if (!clientSocket) {

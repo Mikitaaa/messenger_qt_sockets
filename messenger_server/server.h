@@ -14,6 +14,7 @@ public:
 
 public slots:
     void start();
+    void stop();
 
 private slots:
     void handleNewConnection();
