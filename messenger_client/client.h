@@ -12,9 +12,12 @@ public:
 
     void setServerAddress(const QString &address);
     void setServerPort(quint16 port);
+
     void sendMessage(const QString &message);
+
     void connectToServer();
     void disconnectFromServer();
+    bool isConnected() const;
 
 private slots:
     void connected();

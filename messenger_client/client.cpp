@@ -35,6 +35,10 @@ void Client::connectToServer() {
     }
 }
 
+bool Client::isConnected() const {
+    return serverSocket->state() == QAbstractSocket::ConnectedState;
+}
+
 void Client::readyRead() {
     QByteArray data = serverSocket->readAll();
     emit ThrowMessageFromServer(QString(data));

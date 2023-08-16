@@ -20,11 +20,23 @@ private slots:
     void displayError(const QString &errorMessage);
     void displayMessage(const QString &Message);
 
+    void connectToServer();
+    void disconnectFromServer();
+
 private:
     Client *client;
-    QLineEdit *messageLineEdit;
-    QPushButton *sendButton;
     QTextEdit *chatTextEdit;
     QLabel *errorLabel;
+
+    QPushButton *sendButton;
+    QPushButton *connectButton;
+    QPushButton *disconnectButton;
+
+    QLineEdit *ipLineEdit;
+    QLineEdit *portLineEdit;
+    QLineEdit *messageLineEdit;
+
+    void updateUIState();
+
 };
 #endif // CLIENTWINDOW_H
