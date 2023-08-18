@@ -32,6 +32,10 @@ private:
 signals:
     void ThrowActionResult(const QString &errorMessage);
     void ThrowMessageFromServer(const QString &Message);
+
+    void connectedToServer();
+    void disconnectedFromServer();
+
 };
 
 #endif // CLIENT_H

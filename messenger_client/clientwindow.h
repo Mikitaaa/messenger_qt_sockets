@@ -4,9 +4,6 @@
 #include <QMainWindow>
 #include "client.h"
 
-class QLineEdit;
-class QPushButton;
-
 class ClientWindow : public QMainWindow
 {
     Q_OBJECT
@@ -23,6 +20,8 @@ private slots:
     void connectToServer();
     void disconnectFromServer();
 
+    void updateUIState();
+
 private:
     Client *client;
     QTextEdit *chatTextEdit;
@@ -35,8 +34,5 @@ private:
     QLineEdit *ipLineEdit;
     QLineEdit *portLineEdit;
     QLineEdit *messageLineEdit;
-
-    void updateUIState();
-
 };
 #endif // CLIENTWINDOW_H

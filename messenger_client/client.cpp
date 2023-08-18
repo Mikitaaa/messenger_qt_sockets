@@ -46,9 +46,15 @@ void Client::readyRead() {
 
 void Client::disconnectFromServer() {  serverSocket->disconnectFromHost(); }
 
-void Client::connected() { emit ThrowActionResult("Connected to server."); }
+void Client::connected() {
+    emit ThrowActionResult("Connected to server.");
+    emit connectedToServer();
+}
 
-void Client::disconnected() { emit ThrowActionResult("Disconnected from server."); }
+void Client::disconnected() {
+    emit ThrowActionResult("Disconnected from server.");
+    emit disconnectedFromServer();
+}
 
 void Client::setServerAddress(const QString &address) { serverAddress = address; }
 

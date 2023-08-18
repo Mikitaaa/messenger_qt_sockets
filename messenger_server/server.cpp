@@ -29,6 +29,10 @@ void Server::start() {
 }
 
 void Server::stop() {
+    for (auto *clientSocket : clients) {
+            clientSocket->close();
+        }
+
     server->close();
     emit ThrowlogMessage("Server stopped.");
 }
