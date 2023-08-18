@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Client</title>
+</head>
+<body>
+    <div>
+        <input type="text" id="messageInput" placeholder="Enter your message">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    <div id="messageDisplay"></div>
+    <script>
+        const messageInput = document.getElementById('messageInput');
+        const messageDisplay = document.getElementById('messageDisplay');
+
+        const ws = new WebSocket('ws://192.168.0.110:5000'); // IP и порт C++ сервера
+
+        ws.onopen = () => {
+            console.log('Connected to server.');
+        };
+
+        ws.onmessage = (event) => {
+            const message = event.data;
+            messageDisplay.innerHTML += `<p>${message}</p>`;
+        };
+
+        ws.onclose = () => {
+            console.log('Connection closed.');
+        };
+
+        function sendMessage() {
+            const message = messageInput.value;
+            ws.send(message);
+            messageInput.value = '';
+        }
+    </script>
+</body>
+</html>
