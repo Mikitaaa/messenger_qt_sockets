@@ -2,8 +2,8 @@
 #include <QNetworkInterface>
 
 Server::Server(QObject *parent) : QObject(parent) {
-    server = new QTcpServer(this);
-    connect(server, &QTcpServer::newConnection, this, &Server::handleNewConnection);
+    webSocketServer = new QWebSocketServer(QStringLiteral("WebSocket Server"), QWebSocketServer::NonSecureMode, this);
+    connect(webSocketServer, &QWebSocketServer::newConnection, this, &Server::handleNewConnection);
 }
 
 QString getLocalIpAddress() {
@@ -21,7 +21,7 @@ QString getLocalIpAddress() {
 }
 
 void Server::start() {
-    if (!server->listen(QHostAddress::Any, SERVER_PORT)) {
+    if (!webSocketServer->listen(QHostAddress::Any, SERVER_PORT)) {
         emit ThrowlogMessage("Error: Server could not start!");
     } else {
         emit ThrowlogMessage("Server started with IP: " + getLocalIpAddress());
@@ -29,29 +29,29 @@ void Server::start() {
 }
 
 void Server::stop() {
-    for (auto *clientSocket : clients) {
+    for (QWebSocket *clientSocket : clients) {
             clientSocket->close();
         }
 
-    server->close();
+    webSocketServer->close();
     emit ThrowlogMessage("Server stopped.");
 }
 
 void Server::handleNewConnection() {
-    QTcpSocket *clientSocket = server->nextPendingConnection();
+    QWebSocket *clientSocket = webSocketServer->nextPendingConnection();
     if (!clientSocket) {
         emit ThrowlogMessage("Error: Unable to get client connection.");
         return;
     }
 
     clients.append(clientSocket);
-    connect(clientSocket, &QTcpSocket::readyRead, this, &Server::readMessage);
-    connect(clientSocket, &QTcpSocket::disconnected, this, &Server::handleClientDisconnection);
+    connect(clientSocket, &QWebSocket::textMessageReceived, this, &Server::readMessage);
+    connect(clientSocket, &QWebSocket::disconnected, this, &Server::handleClientDisconnection);
     emit ThrowlogMessage("New client connected.");
 }
 
 void Server::handleClientDisconnection() {
-    QTcpSocket *clientSocket = qobject_cast<QTcpSocket*>(sender());
+    QWebSocket *clientSocket = qobject_cast<QWebSocket*>(sender());
     if (!clientSocket) { return; }
 
     clients.removeOne(clientSocket);
@@ -59,17 +59,15 @@ void Server::handleClientDisconnection() {
     clientSocket->deleteLater();
 }
 
-void Server::readMessage() {
-    QTcpSocket *clientSocket = qobject_cast<QTcpSocket*>(sender());
+void Server::readMessage(QString message) {
+    QWebSocket *clientSocket = qobject_cast<QWebSocket*>(sender());
     if (!clientSocket) { return; }
 
-    QString message = clientSocket->readAll();
     sendMessageToAll(message);
 }
 
-void Server::sendMessageToAll(QString msg) {
-    for (QTcpSocket *otherClient : clients) {
-          otherClient->write(msg.toUtf8());
-          otherClient->flush();
+void Server::sendMessageToAll(const QString &msg) {
+    for (QWebSocket *otherClient : clients) {
+        otherClient->sendTextMessage(msg);
     }
 }

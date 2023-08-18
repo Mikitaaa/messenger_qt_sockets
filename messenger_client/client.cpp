@@ -1,23 +1,19 @@
 #include "client.h"
 
 Client::Client(QObject *parent)
-    : QObject(parent), serverSocket(new QTcpSocket(this)) {
+    : QObject(parent), cllientSocket(new QWebSocket()) {
 
     serverPort = 0;
     serverAddress = "null";
 
-    connect(serverSocket, &QTcpSocket::connected, this, &Client::connected);
-    connect(serverSocket, &QTcpSocket::disconnected, this, &Client::disconnected);
-    connect(serverSocket, &QTcpSocket::readyRead, this, &Client::readyRead);
+    connect(cllientSocket, &QWebSocket::connected, this, &Client::connected);
+    connect(cllientSocket, &QWebSocket::disconnected, this, &Client::disconnected);
+    connect(cllientSocket, &QWebSocket::textMessageReceived, this, &Client::textMessageReceived);
 }
 
 void Client::sendMessage(const QString &message) {
-    if (serverSocket->state() == QAbstractSocket::ConnectedState) {
-        QByteArray data = message.toUtf8();
-        if (serverSocket->write(data) == -1) {
-            emit ThrowActionResult("Failed to send message.");
-        }
-        serverSocket->flush();
+    if (cllientSocket->state() == QAbstractSocket::ConnectedState) {
+        cllientSocket->sendTextMessage(message);
     } else {
         emit ThrowActionResult("Not connected to server. Message not sent.");
     }
@@ -25,35 +21,31 @@ void Client::sendMessage(const QString &message) {
 
 void Client::connectToServer() {
     if (!serverAddress.isEmpty() && serverPort != 0) {
-        serverSocket->connectToHost(serverAddress, serverPort);
+        QString url = QString("ws://%1:%2").arg(serverAddress).arg(serverPort);
+       // webSocket->setProperty(QAbstractSocket::QtSocketVerboseDebug, true);
 
-        if (!serverSocket->waitForConnected()) {
-            emit ThrowActionResult("Connection Failed.");
-        }
+        cllientSocket->open(QUrl(url));
     } else {
         emit ThrowActionResult("Server address or port isn't set.");
     }
 }
 
 bool Client::isConnected() const {
-    return serverSocket->state() == QAbstractSocket::ConnectedState;
+    return cllientSocket->state() == QAbstractSocket::ConnectedState;
 }
 
-void Client::readyRead() {
-    QByteArray data = serverSocket->readAll();
-    emit ThrowMessageFromServer(QString(data));
-}
+void Client::textMessageReceived(const QString &message) { emit ThrowMessageFromServer(message); }
 
-void Client::disconnectFromServer() {  serverSocket->disconnectFromHost(); }
+void Client::disconnectFromServer() { cllientSocket->close(); }
 
 void Client::connected() {
     emit ThrowActionResult("Connected to server.");
-    emit connectedToServer();
+    emit connectedSignal();
 }
 
 void Client::disconnected() {
     emit ThrowActionResult("Disconnected from server.");
-    emit disconnectedFromServer();
+    emit disconnectedSignal();
 }
 
 void Client::setServerAddress(const QString &address) { serverAddress = address; }

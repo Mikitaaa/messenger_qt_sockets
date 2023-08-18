@@ -2,15 +2,16 @@
 #define SERVER_H
 
 #include <QObject>
-#include <QTcpServer>
-#include <QTcpSocket>
+#include <QWebSocketServer>
+#include <QWebSocket>
+#include <QList>
 
 class Server : public QObject
 {
     Q_OBJECT
 public:
     explicit Server(QObject *parent = nullptr);
-    void sendMessageToAll(QString msg);
+    void sendMessageToAll(const QString &msg);
 
 public slots:
     void start();
@@ -19,11 +20,11 @@ public slots:
 private slots:
     void handleNewConnection();
     void handleClientDisconnection();
-    void readMessage();
+    void readMessage(QString message);
 
 private:
-    QTcpServer *server;
-    QList<QTcpSocket*> clients;
+    QWebSocketServer *webSocketServer;
+    QList<QWebSocket*> clients;
 
     static const int SERVER_PORT = 5000;
 

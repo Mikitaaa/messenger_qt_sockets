@@ -1,8 +1,9 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+#include <QObject>
 #include <QtWidgets>
-#include <QtNetwork>
+#include <QtWebSockets/QWebSocket>
 
 class Client : public QObject {
     Q_OBJECT
@@ -22,10 +23,11 @@ public:
 private slots:
     void connected();
     void disconnected();
-    void readyRead();
+
+    void textMessageReceived(const QString &message);
 
 private:
-    QTcpSocket *serverSocket;
+    QWebSocket *cllientSocket;
     QString serverAddress;
     quint16 serverPort;
 
@@ -33,9 +35,8 @@ signals:
     void ThrowActionResult(const QString &errorMessage);
     void ThrowMessageFromServer(const QString &Message);
 
-    void connectedToServer();
-    void disconnectedFromServer();
-
+    void connectedSignal();
+    void disconnectedSignal();
 };
 
 #endif // CLIENT_H

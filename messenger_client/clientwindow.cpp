@@ -54,8 +54,8 @@ ClientWindow::ClientWindow(QWidget *parent)
     ipLineEdit->setText("192.168.0.110");
     portLineEdit->setText("5000");
 
-    connect(client, &Client::connectedToServer, this, &ClientWindow::updateUIState);
-    connect(client, &Client::disconnectedFromServer, this, &ClientWindow::updateUIState);
+    connect(client, &Client::connectedSignal, this, &ClientWindow::updateUIState);
+    connect(client, &Client::disconnectedSignal, this, &ClientWindow::updateUIState);
     updateUIState();
 }
 
@@ -75,10 +75,12 @@ void ClientWindow::connectToServer() {
     client->setServerAddress(ip);
     client->setServerPort(port);
     client->connectToServer();
+    updateUIState();
 }
 
 void ClientWindow::disconnectFromServer() {
     client->disconnectFromServer();
+    updateUIState();
 }
 
 void ClientWindow::sendMessage() {
