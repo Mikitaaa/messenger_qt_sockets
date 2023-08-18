@@ -5,7 +5,7 @@ This is an example of a basic client-server application using TCP sockets, writt
 
 # Dependencies
 
-Qt Framework: You will need the Qt Framework for compiling and running the project.
+Qt Framework: You will need the Qt Framework for compiling and running the project. 
 
 
 # Usage
