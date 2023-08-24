@@ -5,6 +5,10 @@
 #include <QJsonValue>
 
 Server::Server(QObject *parent) : QObject(parent) {
+    actionHandlers = {
+            {"message", &Server::handleMessage}
+        };
+
     webSocketServer = new QWebSocketServer(QStringLiteral("WebSocket Server"), QWebSocketServer::NonSecureMode, this);
     connect(webSocketServer, &QWebSocketServer::newConnection, this, &Server::handleNewConnection);
 }
@@ -76,11 +80,19 @@ void Server::handleAction(QString message) {
     QJsonObject jsonObject = jsonDocument.object();
     QString action = jsonObject.value("action").toString();
 
-    if (action == "message") {
-            QString content = jsonObject.value("content").toString();
-            QString clientMessage = QString("Client %1: %2").arg(clients.indexOf(client)).arg(content);
-            sendMessageToAll(clientMessage);
+
+    auto it = actionHandlers.find(action);
+        if (it != actionHandlers.end()) {
+            (this->*(it->second))(client, jsonObject);
+        } else {
+            // Обработка неизвестного действия пока что нету такого
         }
+}
+
+void Server::handleMessage(Client * client, const QJsonObject &jsonObject) {
+    QString content = jsonObject.value("content").toString();
+    QString clientMessage = QString("Client %1: %2").arg(clients.indexOf(client)).arg(content);
+    sendMessageToAll(clientMessage);
 }
 
 void Server::sendMessageToAll(const QString &msg) {
