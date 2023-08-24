@@ -30,7 +30,13 @@
 
         function sendMessage() {
             const message = messageInput.value;
-            ws.send(message);
+
+            const jsonFormMessage = {
+                action: "message",
+                content: message
+            };
+
+            ws.send(JSON.stringify(jsonFormMessage));
             messageInput.value = '';
         }
     </script>

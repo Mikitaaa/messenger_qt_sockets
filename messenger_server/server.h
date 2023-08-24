@@ -21,7 +21,7 @@ public slots:
 private slots:
     void handleNewConnection();
     void handleClientDisconnection();
-    void readMessage(QString message);
+    void handleAction(QString message);
 
 private:
     QWebSocketServer *webSocketServer;

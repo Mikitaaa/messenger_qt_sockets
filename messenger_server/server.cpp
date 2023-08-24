@@ -1,5 +1,8 @@
 #include "server.h"
 #include <QNetworkInterface>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
 
 Server::Server(QObject *parent) : QObject(parent) {
     webSocketServer = new QWebSocketServer(QStringLiteral("WebSocket Server"), QWebSocketServer::NonSecureMode, this);
@@ -48,7 +51,7 @@ void Server::handleNewConnection() {
     Client *client = new Client(clientSocket, this);
     clients.append(client);
 
-    connect(client, &Client::messageReceived, this, &Server::readMessage);
+    connect(client, &Client::messageReceived, this, &Server::handleAction);
     connect(client, &Client::disconnected, this, &Server::handleClientDisconnection);
     emit ThrowlogMessage("New client connected.");
 }
@@ -63,12 +66,21 @@ void Server::handleClientDisconnection() {
     emit ThrowlogMessage("Client disconnected.");
 }
 
-void Server::readMessage(QString message) {
+void Server::handleAction(QString message) {
     Client *client = qobject_cast<Client*>(sender());
     if (!client) { return; }
 
-    QString clientMessage = QString("Client %1: %2").arg(clients.indexOf(client)).arg(message);
-    sendMessageToAll(clientMessage);
+    QJsonDocument jsonDocument = QJsonDocument::fromJson(message.toUtf8());
+        if (jsonDocument.isNull()) {  return; }
+
+    QJsonObject jsonObject = jsonDocument.object();
+    QString action = jsonObject.value("action").toString();
+
+    if (action == "message") {
+            QString content = jsonObject.value("content").toString();
+            QString clientMessage = QString("Client %1: %2").arg(clients.indexOf(client)).arg(content);
+            sendMessageToAll(clientMessage);
+        }
 }
 
 void Server::sendMessageToAll(const QString &msg) {

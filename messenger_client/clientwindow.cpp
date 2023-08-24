@@ -85,7 +85,14 @@ void ClientWindow::disconnectFromServer() {
 
 void ClientWindow::sendMessage() {
     QString message = messageLineEdit->text();
-    client->sendMessage(message);
+
+    QJsonObject jsonObject;
+    jsonObject["action"] = "message";
+    jsonObject["content"] = message;
+
+    QJsonDocument jsonMessageDocument(jsonObject);
+
+    client->sendMessage(jsonMessageDocument.toJson());
     messageLineEdit->clear();
 }
 
