@@ -5,6 +5,7 @@
 #include <QWebSocketServer>
 #include <QWebSocket>
 #include <QList>
+#include "client.h"
 
 class Server : public QObject
 {
@@ -24,7 +25,7 @@ private slots:
 
 private:
     QWebSocketServer *webSocketServer;
-    QList<QWebSocket*> clients;
+    QList<Client*> clients;
 
     static const int SERVER_PORT = 5000;
 

@@ -29,8 +29,9 @@ void Server::start() {
 }
 
 void Server::stop() {
-    for (QWebSocket *clientSocket : clients) {
-            clientSocket->close();
+    for (Client *client : clients) {
+            client->disconnectFromServer();
+            client->deleteLater();
         }
 
     webSocketServer->close();
@@ -44,30 +45,34 @@ void Server::handleNewConnection() {
         return;
     }
 
-    clients.append(clientSocket);
-    connect(clientSocket, &QWebSocket::textMessageReceived, this, &Server::readMessage);
-    connect(clientSocket, &QWebSocket::disconnected, this, &Server::handleClientDisconnection);
+    Client *client = new Client(clientSocket, this);
+    clients.append(client);
+
+    connect(client, &Client::messageReceived, this, &Server::readMessage);
+    connect(client, &Client::disconnected, this, &Server::handleClientDisconnection);
     emit ThrowlogMessage("New client connected.");
 }
 
 void Server::handleClientDisconnection() {
-    QWebSocket *clientSocket = qobject_cast<QWebSocket*>(sender());
-    if (!clientSocket) { return; }
+    Client *client = qobject_cast<Client*>(sender());
+    if (!client) { return; }
 
-    clients.removeOne(clientSocket);
+    clients.removeOne(client);
+    client->deleteLater();
+
     emit ThrowlogMessage("Client disconnected.");
-    clientSocket->deleteLater();
 }
 
 void Server::readMessage(QString message) {
-    QWebSocket *clientSocket = qobject_cast<QWebSocket*>(sender());
-    if (!clientSocket) { return; }
+    Client *client = qobject_cast<Client*>(sender());
+    if (!client) { return; }
 
-    sendMessageToAll(message);
+    QString clientMessage = QString("Client %1: %2").arg(clients.indexOf(client)).arg(message);
+    sendMessageToAll(clientMessage);
 }
 
 void Server::sendMessageToAll(const QString &msg) {
-    for (QWebSocket *otherClient : clients) {
-        otherClient->sendTextMessage(msg);
+    for (Client *client : clients) {
+        client->sendMessage(msg);
     }
 }
