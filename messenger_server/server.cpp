@@ -37,6 +37,7 @@ QString lightGray(const QString &text) {  return "<font color='lightGray'>" + te
 QString red(const QString &text) { return "<font color='red'>" + text + "</font>"; }
 
 void Server::start() {
+  if (!webSocketServer->isListening()) {
     if (!webSocketServer->listen(QHostAddress::Any, SERVER_PORT)) {
         emit ThrowlogMessage(red("Error: Server could not start!"));
     } else {
@@ -44,6 +45,9 @@ void Server::start() {
                              "<br>http://" + getLocalIpAddress() + ":" +
                              cyan(QString::number(SERVER_PORT)));
     }
+  }else {
+      emit ThrowlogMessage(red("Server is already started."));
+  }
 }
 
 void Server::stop() {
