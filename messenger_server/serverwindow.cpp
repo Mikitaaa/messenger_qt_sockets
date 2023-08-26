@@ -29,6 +29,6 @@ ServerWindow::ServerWindow(QWidget *parent)
 ServerWindow::~ServerWindow() {}
 
 void ServerWindow::appendToLog(const QString &Message) {
-    Serverlog->append(Message + "\n");
+    Serverlog->append(Message + "<br>");
 }
 

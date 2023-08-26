@@ -26,12 +26,23 @@ QString getLocalIpAddress() {
 
     return localIpAddress;
 }
+QString green(const QString &text) {  return "<font color='green'>" + text + "</font>"; }
+
+QString cyan(const QString &text) { return "<font color='cyan'>" + text + "</font>"; }
+
+QString yellow(const QString &text) {  return "<font color='yellow'>" + text + "</font>"; }
+
+QString lightGray(const QString &text) {  return "<font color='lightGray'>" + text + "</font>"; }
+
+QString red(const QString &text) { return "<font color='red'>" + text + "</font>"; }
 
 void Server::start() {
     if (!webSocketServer->listen(QHostAddress::Any, SERVER_PORT)) {
-        emit ThrowlogMessage("Error: Server could not start!");
+        emit ThrowlogMessage(red("Error: Server could not start!"));
     } else {
-        emit ThrowlogMessage("Server started with IP: " + getLocalIpAddress());
+        emit ThrowlogMessage(yellow("Server started on:") +
+                             "<br>http://" + getLocalIpAddress() + ":" +
+                             cyan(QString::number(SERVER_PORT)));
     }
 }
 
@@ -42,13 +53,13 @@ void Server::stop() {
         }
 
     webSocketServer->close();
-    emit ThrowlogMessage("Server stopped.");
+    emit ThrowlogMessage(yellow("Server stopped."));
 }
 
 void Server::handleNewConnection() {
     QWebSocket *clientSocket = webSocketServer->nextPendingConnection();
     if (!clientSocket) {
-        emit ThrowlogMessage("Error: Unable to get client connection.");
+        emit ThrowlogMessage(red("Error: Unable to get client connection."));
         return;
     }
 
@@ -57,7 +68,7 @@ void Server::handleNewConnection() {
 
     connect(client, &Client::messageReceived, this, &Server::handleAction);
     connect(client, &Client::disconnected, this, &Server::handleClientDisconnection);
-    emit ThrowlogMessage("New client connected.");
+    emit ThrowlogMessage(green("New client connected."));
 }
 
 void Server::handleClientDisconnection() {
@@ -67,7 +78,7 @@ void Server::handleClientDisconnection() {
     clients.removeOne(client);
     client->deleteLater();
 
-    emit ThrowlogMessage("Client disconnected.");
+    emit ThrowlogMessage(lightGray("Client disconnected."));
 }
 
 void Server::handleAction(QString message) {

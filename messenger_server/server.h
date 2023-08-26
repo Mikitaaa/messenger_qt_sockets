@@ -5,11 +5,9 @@
 
 #include <QWebSocketServer>
 #include <QWebSocket>
-#include <QJsonObject>
 
 #include <QList>
 #include <map>
-#include <functional>
 
 #include "client.h"
 
