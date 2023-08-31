@@ -31,7 +31,8 @@ private:
     QWebSocketServer *webSocketServer;
     QList<Client*> clients;
 
-    static const int SERVER_PORT = 5000;
+    const int SERVER_PORT = 5000;
+    QString SERVER_IP;
 
     using ActionFunction = void (Server::*)(Client*, const QJsonObject&);
     std::map<QString, ActionFunction> actionHandlers;

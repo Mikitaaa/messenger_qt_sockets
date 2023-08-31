@@ -4,6 +4,8 @@
 #include <QJsonObject>
 #include <QJsonValue>
 
+QString getLocalIpAddress();
+
 Server::Server(QObject *parent) : QObject(parent) {
     actionHandlers = {
             {"message", &Server::handleMessage}
@@ -11,6 +13,8 @@ Server::Server(QObject *parent) : QObject(parent) {
 
     webSocketServer = new QWebSocketServer(QStringLiteral("WebSocket Server"), QWebSocketServer::NonSecureMode, this);
     connect(webSocketServer, &QWebSocketServer::newConnection, this, &Server::handleNewConnection);
+
+    SERVER_IP = getLocalIpAddress();
 }
 
 QString getLocalIpAddress() {
@@ -42,7 +46,7 @@ void Server::start() {
         emit ThrowlogMessage(red("Error: Server could not start!"));
     } else {
         emit ThrowlogMessage(yellow("Server started on:") +
-                             "<br>http://" + getLocalIpAddress() + ":" +
+                             "<br>http://" + SERVER_IP + ":" +
                              cyan(QString::number(SERVER_PORT)));
     }
   }else {
