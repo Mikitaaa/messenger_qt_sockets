@@ -13,7 +13,7 @@
         const messageInput = document.getElementById('messageInput');
         const messageDisplay = document.getElementById('messageDisplay');
 
-        const ws = new WebSocket('ws://192.168.0.110:5000'); // IP и порт C++ сервера
+        const ws = new WebSocket('ws://192.168.148.83:5000'); // IP и порт C++ сервера
 
         ws.onopen = () => {
             console.log('Connected to server.');

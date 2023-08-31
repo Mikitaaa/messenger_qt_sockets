@@ -89,23 +89,23 @@ void Server::handleAction(QString message) {
     Client *client = qobject_cast<Client*>(sender());
     if (!client) { return; }
 
-    QJsonDocument jsonDocument = QJsonDocument::fromJson(message.toUtf8());
-        if (jsonDocument.isNull()) {  return; }
+    QJsonDocument responceDocument = QJsonDocument::fromJson(message.toUtf8());
+        if (responceDocument.isNull()) {  return; }
 
-    QJsonObject jsonObject = jsonDocument.object();
-    QString action = jsonObject.value("action").toString();
+    QJsonObject responceObject = responceDocument.object();
+    QString action = responceObject.value("action").toString();
 
 
     auto it = actionHandlers.find(action);
         if (it != actionHandlers.end()) {
-            (this->*(it->second))(client, jsonObject);
+            (this->*(it->second))(client, responceObject);
         } else {
             // Обработка неизвестного действия пока что нету такого
         }
 }
 
-void Server::handleMessage(Client * client, const QJsonObject &jsonObject) {
-    QString content = jsonObject.value("content").toString();
+void Server::handleMessage(Client * client, const QJsonObject &responceObject) {
+    QString content = responceObject.value("content").toString();
     QString clientMessage = QString("Client %1: %2").arg(clients.indexOf(client)).arg(content);
     sendMessageToAll(clientMessage);
 }
