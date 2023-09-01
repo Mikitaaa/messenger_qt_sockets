@@ -1,9 +1,20 @@
 #include "server.h"
 #include <QNetworkInterface>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
+
+QString getLocalIpAddress();
 
 Server::Server(QObject *parent) : QObject(parent) {
-    server = new QTcpServer(this);
-    connect(server, &QTcpServer::newConnection, this, &Server::handleNewConnection);
+    actionHandlers = {
+            {"message", &Server::handleMessage}
+        };
+
+    webSocketServer = new QWebSocketServer(QStringLiteral("WebSocket Server"), QWebSocketServer::NonSecureMode, this);
+    connect(webSocketServer, &QWebSocketServer::newConnection, this, &Server::handleNewConnection);
+
+    SERVER_IP = getLocalIpAddress();
 }
 
 QString getLocalIpAddress() {
@@ -19,57 +30,92 @@ QString getLocalIpAddress() {
 
     return localIpAddress;
 }
+QString green(const QString &text) {  return "<font color='green'>" + text + "</font>"; }
+
+QString cyan(const QString &text) { return "<font color='cyan'>" + text + "</font>"; }
+
+QString yellow(const QString &text) {  return "<font color='yellow'>" + text + "</font>"; }
+
+QString lightGray(const QString &text) {  return "<font color='lightGray'>" + text + "</font>"; }
+
+QString red(const QString &text) { return "<font color='red'>" + text + "</font>"; }
 
 void Server::start() {
-    if (!server->listen(QHostAddress::Any, SERVER_PORT)) {
-        emit ThrowlogMessage("Error: Server could not start!");
+  if (!webSocketServer->isListening()) {
+    if (!webSocketServer->listen(QHostAddress::Any, SERVER_PORT)) {
+        emit ThrowlogMessage(red("Error: Server could not start!"));
     } else {
-        emit ThrowlogMessage("Server started with IP: " + getLocalIpAddress());
+        emit ThrowlogMessage(yellow("Server started on:") +
+                             "<br>http://" + SERVER_IP + ":" +
+                             cyan(QString::number(SERVER_PORT)));
     }
+  }else {
+      emit ThrowlogMessage(red("Server is already started."));
+  }
 }
 
 void Server::stop() {
-    for (auto *clientSocket : clients) {
-            clientSocket->close();
+    for (Client *client : clients) {
+            client->disconnectFromServer();
+            client->deleteLater();
         }
 
-    server->close();
-    emit ThrowlogMessage("Server stopped.");
+    webSocketServer->close();
+    emit ThrowlogMessage(yellow("Server stopped."));
 }
 
 void Server::handleNewConnection() {
-    QTcpSocket *clientSocket = server->nextPendingConnection();
+    QWebSocket *clientSocket = webSocketServer->nextPendingConnection();
     if (!clientSocket) {
-        emit ThrowlogMessage("Error: Unable to get client connection.");
+        emit ThrowlogMessage(red("Error: Unable to get client connection."));
         return;
     }
 
-    clients.append(clientSocket);
-    connect(clientSocket, &QTcpSocket::readyRead, this, &Server::readMessage);
-    connect(clientSocket, &QTcpSocket::disconnected, this, &Server::handleClientDisconnection);
-    emit ThrowlogMessage("New client connected.");
+    Client *client = new Client(clientSocket, this);
+    clients.append(client);
+
+    connect(client, &Client::messageReceived, this, &Server::handleAction);
+    connect(client, &Client::disconnected, this, &Server::handleClientDisconnection);
+    emit ThrowlogMessage(green("New client connected."));
 }
 
 void Server::handleClientDisconnection() {
-    QTcpSocket *clientSocket = qobject_cast<QTcpSocket*>(sender());
-    if (!clientSocket) { return; }
+    Client *client = qobject_cast<Client*>(sender());
+    if (!client) { return; }
 
-    clients.removeOne(clientSocket);
-    emit ThrowlogMessage("Client disconnected.");
-    clientSocket->deleteLater();
+    clients.removeOne(client);
+    client->deleteLater();
+
+    emit ThrowlogMessage(lightGray("Client disconnected."));
 }
 
-void Server::readMessage() {
-    QTcpSocket *clientSocket = qobject_cast<QTcpSocket*>(sender());
-    if (!clientSocket) { return; }
+void Server::handleAction(QString message) {
+    Client *client = qobject_cast<Client*>(sender());
+    if (!client) { return; }
 
-    QString message = clientSocket->readAll();
-    sendMessageToAll(message);
+    QJsonDocument responceDocument = QJsonDocument::fromJson(message.toUtf8());
+        if (responceDocument.isNull()) {  return; }
+
+    QJsonObject responceObject = responceDocument.object();
+    QString action = responceObject.value("action").toString();
+
+
+    auto it = actionHandlers.find(action);
+        if (it != actionHandlers.end()) {
+            (this->*(it->second))(client, responceObject);
+        } else {
+            // Обработка неизвестного действия пока что нету такого
+        }
 }
 
-void Server::sendMessageToAll(QString msg) {
-    for (QTcpSocket *otherClient : clients) {
-          otherClient->write(msg.toUtf8());
-          otherClient->flush();
+void Server::handleMessage(Client * client, const QJsonObject &responceObject) {
+    QString content = responceObject.value("content").toString();
+    QString clientMessage = QString("Client %1: %2").arg(clients.indexOf(client)).arg(content);
+    sendMessageToAll(clientMessage);
+}
+
+void Server::sendMessageToAll(const QString &msg) {
+    for (Client *client : clients) {
+        client->sendMessage(msg);
     }
 }

@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
-find_package(Qt5 REQUIRED COMPONENTS Core Network)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS WebSockets)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -21,6 +21,8 @@ set(PROJECT_SOURCES
         serverwindow.h
         server.h
         server.cpp
+        client.h
+        client.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -46,7 +48,7 @@ else()
     endif()
 endif()
 
-target_link_libraries(messenger_server PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network)
+target_link_libraries(messenger_server PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::WebSockets)
 
 set_target_properties(messenger_server PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

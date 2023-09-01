@@ -2,15 +2,21 @@
 #define SERVER_H
 
 #include <QObject>
-#include <QTcpServer>
-#include <QTcpSocket>
+
+#include <QWebSocketServer>
+#include <QWebSocket>
+
+#include <QList>
+#include <map>
+
+#include "client.h"
 
 class Server : public QObject
 {
     Q_OBJECT
 public:
     explicit Server(QObject *parent = nullptr);
-    void sendMessageToAll(QString msg);
+    void sendMessageToAll(const QString &msg);
 
 public slots:
     void start();
@@ -19,14 +25,19 @@ public slots:
 private slots:
     void handleNewConnection();
     void handleClientDisconnection();
-    void readMessage();
+    void handleAction(QString message);
 
 private:
-    QTcpServer *server;
-    QList<QTcpSocket*> clients;
+    QWebSocketServer *webSocketServer;
+    QList<Client*> clients;
 
-    static const int SERVER_PORT = 5000;
+    const int SERVER_PORT = 5000;
+    QString SERVER_IP;
 
+    using ActionFunction = void (Server::*)(Client*, const QJsonObject&);
+    std::map<QString, ActionFunction> actionHandlers;
+
+    void handleMessage(Client*, const QJsonObject &jsonObject);
 signals:
     void ThrowlogMessage(const QString &message);
 };
